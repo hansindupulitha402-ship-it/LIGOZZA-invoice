@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101010"><meta name="description" content="LIGOZZA offline billing and invoice app">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg">
+<title>LIGOZZA Billing</title>
+<style>
+:root{--bg:#f3f3f3;--card:#fff;--ink:#171717;--muted:#737373;--line:#e4e4e4;--black:#111}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+header{height:64px;background:#101010;color:white;display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:5}
+.brand{font-size:21px;font-weight:900;letter-spacing:4px}.sub{font-size:10px;letter-spacing:2px;color:#aaa}
+.wrap{max-width:1280px;margin:22px auto;padding:0 16px;display:grid;grid-template-columns:minmax(310px,420px) 1fr;gap:18px}
+.panel,.preview{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:0 5px 24px #00000008}
+h2{font-size:16px;margin:0 0 14px}h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:20px 0 8px}
+label{display:block;color:#555;font-size:12px;margin:10px 0 5px}
+input,select,textarea{width:100%;border:1px solid #d4d4d4;border-radius:8px;padding:10px 11px;background:#fff;color:#111;font:inherit;min-width:0}
+button{border:0;border-radius:8px;padding:11px 14px;background:#111;color:white;font-weight:650;cursor:pointer}
+button.alt{background:#ededed;color:#171717}button.red{background:#a52828}.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.fieldgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.product-line{display:grid;grid-template-columns:minmax(0,1fr) 88px 65px 34px;gap:6px;margin:8px 0}
+.product-line input,.product-line select{padding:9px 7px}.product-line button{padding:6px;background:#eee;color:#222}
+.mini{font-size:11px;color:#777}.preview{padding:32px;min-height:700px}
+.invhead{display:flex;justify-content:space-between;gap:16px;border-bottom:2px solid #111;padding-bottom:20px}
+.invbrand{font-size:30px;font-weight:900;letter-spacing:5px}.tag{font-size:10px;color:#777;letter-spacing:2px}
+#logoPreview{max-width:120px;max-height:68px;object-fit:contain;display:none}
+.invtitle{text-align:right}.invtitle strong{font-size:26px;display:block}.invtitle span{display:block;margin-top:3px}
+.billto{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:22px 0}
+.billto b{display:block;margin-bottom:5px}.billto .cap{font-size:10px;color:#777;letter-spacing:1px;text-transform:uppercase}
+table{width:100%;border-collapse:collapse;margin-top:16px}th{background:#111;color:#fff;text-align:left;padding:10px 8px;font-size:11px}td{padding:11px 8px;border-bottom:1px solid #e5e5e5}td.r,th.r{text-align:right}
+.totalbox{width:min(300px,100%);margin:20px 0 0 auto}.totalbox div{display:flex;justify-content:space-between;padding:6px 0}.grand{border-top:2px solid #111;margin-top:5px;padding-top:12px!important;font-size:18px;font-weight:800}
+.foot{border-top:1px solid #ddd;margin-top:35px;padding-top:14px;color:#666;font-size:12px}
+#productEditor{display:none;border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:10px}
+#productEditor textarea{min-height:170px;font-family:ui-monospace,monospace;font-size:12px}
+.status{color:#777;font-size:11px}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}.preview{padding:20px;min-height:0}}
+@media(max-width:430px){header{padding:0 14px}.wrap{padding:0 9px;margin:10px auto}.panel{padding:14px}.preview{padding:14px}.product-line{grid-template-columns:minmax(0,1fr) 72px 54px 30px}.invbrand{font-size:24px}.invtitle strong{font-size:21px}}
+@media print{body{background:#fff}header,.panel,.no-print{display:none!important}.wrap{display:block;margin:0;padding:0;max-width:none}.preview{border:0;border-radius:0;box-shadow:none;padding:12mm;min-height:0} @page{size:A4;margin:0}}
+</style>
+</head>
+<body>
+<header><div><div class="brand">LIGOZZA</div><div class="sub">BILLING APPLICATION</div></div><button id="installBtn" class="alt" style="display:none">Install App</button></header>
+<div class="wrap">
+<section class="panel no-print">
+<h2>Create invoice</h2>
+<div class="fieldgrid">
+<div><label>Customer name</label><input id="customer" placeholder="Customer name"></div>
+<div><label>Phone</label><input id="phone" placeholder="07X XXX XXXX"></div>
+</div>
+<label>Address</label><textarea id="address" rows="2" placeholder="Customer address (optional)"></textarea>
+<div class="fieldgrid">
+<div><label>Invoice date</label><input id="date" type="date"></div>
+<div><label>Invoice number</label><input id="invoiceNo" readonly></div>
+</div>
+<h3>Products in this bill</h3><div id="lines"></div>
+<div class="btnrow"><button class="alt" id="addLine">+ Add product</button><button class="alt" id="editProducts">Edit 40 products</button></div>
+<div id="productEditor"><label>One product per line: Product name | price</label><textarea id="productText"></textarea><div class="btnrow"><button id="saveProducts">Save product list</button><button class="alt" id="cancelProducts">Cancel</button></div></div>
+<div class="fieldgrid">
+<div><label>Discount (LKR)</label><input id="discount" type="number" min="0" value="0"></div>
+<div><label>Payment method</label><select id="payment"><option>Cash</option><option>Bank Transfer</option><option>Card</option><option>Other</option></select></div>
+</div>
+<label>Invoice note</label><input id="note" value="Thank you for shopping with LIGOZZA">
+<div class="btnrow"><button id="print">Print / Save PDF</button><button class="alt" id="newBill">New invoice</button></div>
+<div class="btnrow"><button class="alt" id="historyBtn">Sales history</button><button class="alt" id="exportBtn">Export backup</button><button class="alt" id="importBtn">Import backup</button><input id="importFile" type="file" accept="application/json" hidden></div>
+<p class="mini">Offline-ready app. Your products and invoices are stored on this device/browser. Export a backup regularly.</p>
+<div id="history" style="display:none"><h3>Saved invoices</h3><div id="historyList"></div></div>
+</section>
+<section class="preview" id="invoice">
+<div class="invhead"><div><img id="logoPreview"><div id="brandText" class="invbrand">LIGOZZA</div><div class="tag">CLOTHING • STYLE • QUALITY</div><div class="tag">LIGOZZA Kurunagala,Sri Lanka</div></div>
+<div class="invtitle"><strong>INVOICE</strong><span><b>No:</b> <i id="oNo"></i></span><span><b>Date:</b> <i id="oDate"></i></span></div></div>
+<div class="billto"><div><div class="cap">Bill to</div><b id="oCustomer">Walk-in customer</b><div id="oPhone"></div><div id="oAddress"></div></div><div><div class="cap">Payment method</div><b id="oPayment">Cash</b></div></div>
+<table><thead><tr><th>Product</th><th class="r">Price</th><th class="r">Qty</th><th class="r">Total</th></tr></thead><tbody id="oRows"></tbody></table>
+<div class="totalbox"><div><span>Subtotal</span><b id="oSubtotal">LKR 0.00</b></div><div><span>Discount</span><b id="oDiscount">LKR 0.00</b></div><div class="grand"><span>Total</span><span id="oTotal">LKR 0.00</span></div></div>
+<div class="foot"><b id="oNote">Thank you for shopping with LIGOZZA</b><div style="margin-top:6px">This is a computer-generated invoice.</div></div>
+</section></div>
+<script src="app.js"></script>
+</body></html>

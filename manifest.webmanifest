@@ -1,0 +1,18 @@
+{
+  "name": "LIGOZZA Billing App",
+  "short_name": "LIGOZZA Bill",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f3f3",
+  "theme_color": "#101010",
+  "description": "Offline billing and invoice printing app for LIGOZZA",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
